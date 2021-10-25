@@ -1,5 +1,6 @@
 #!/bin/bash
 ### Packet Monitor
+### Monitor pps on an interface
 
 if [ "$1" != "" ]; then
         NIC=$1
