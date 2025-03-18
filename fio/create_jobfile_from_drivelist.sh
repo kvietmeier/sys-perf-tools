@@ -1,18 +1,27 @@
 #!/bin/bash
-# Using a list of SSDs, create job files to run latency tests on all of them.
+###==============================================================================###
+#   Created by:
+#      Karl Vietmeier
+#      VAST Data Cloud Solutions Architect
+#   
+#   Purpose:
+#    Using a list of SSDs, create job files to run latency tests on all of them.
+#
+###==============================================================================###
 
-
-# Configurable Parameters for job file
+###--- Configurable Parameters for job file
 DRIVE_LIST_FILE="drive_list.txt"  # File containing the list of drives
 SIZE="1G"
 RUNTIME="600"
 BS="4k"
 RW="randrw"
 RWMIXREAD="70"                          # Larger = more read
-NUMJOBS="7"
-LOG_DIR="../logs"
-BASE_JOB_FILE="fio_latency_job_file"
+NUMJOBS="1"
+LOG_DIR="${HOME}/fio/logs"
+BASE_JOB_FILE="drive_latency_tests"
 
+
+###--- Error Checking
 # Ensure log directory exists
 if [[ ! -d "$LOG_DIR" ]]; then
     echo "Creating log directory: $LOG_DIR"
@@ -20,6 +29,9 @@ if [[ ! -d "$LOG_DIR" ]]; then
 else
     echo "Log directory already exists: $LOG_DIR"
 fi
+
+
+###--- Build the job files  ---###
 
 # Function to generate FIO job file
 generate_job_file() {
@@ -78,7 +90,10 @@ EOF
     # Optionally run the test in the background
     echo "Starting FIO test on $drive..."
     #fio "$job_file" &
-}  ###--- End Function
+}
+#
+###--- End Function
+#
 
 
 # Read the list of drives from the file and loop through each one

@@ -1,16 +1,25 @@
 #!/bin/bash
 ###=================================================================================###
 #
-#   Run individual job files to gather json output from latency runs
+#   Created by:
+#      Karl Vietmeier
+#      VAST Data Cloud Solutions Architect
+#   
+#   Purpose:
+#     Create individual FIO commands to gather latency statistics for attached drives.
+#      - JSON outout only works on individual jobs, you can't output the sandard logs to json
+#        so you need to generate a job for every queue depth.
 #
-#   This script will outout both a standard .csv log and reformat stdout to json.
+#   Notes:
+#   * This script will output both a standard .csv log and reformat stdout to json.
+#   * You could create job files and run them but this seems cleaner.
 #
 ###=================================================================================###
 
-# Define the list of iodepths you want to test
+# Define the list of iodepths you want to test:
 iodepths=(1 2 4 8 16 32 64)
 
-# Test parameters
+# FIO Test parameters:
 filename="/dev/nvme0n9"
 ioengine="libaio"
 direct="1"
@@ -26,7 +35,7 @@ log_avg="1000"
 
 drive=${filename##*/}
 
-# Loop through each iodepth and run the test
+# Loop through each iodepth, create the commamd and run the test
 for iodepth in "${iodepths[@]}"; do
   # Run the fio job for the current iodepth
   sudo fio --name=lat_test_qd_${iodepth} \

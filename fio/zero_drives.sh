@@ -1,12 +1,17 @@
 #!/bin/bash
 ###==============================================================================###
-#  From a file with a list of drives, create a job file to concurrently fill all
-#  of them with "0s", effectively zeroing out the drive.
+#   Created by:
+#      Karl Vietmeier
+#      VAST Data Cloud Solutions Architect
+#   
+#   Purpose:
+#    From a file with a list of drives, create a job file to concurrently fill all
+#    of them with "0s", effectively zeroing out the drive.
 #
-#  Important for testing SSDs.o
-#
-#  * Dynamically calculate filesize
-#  * Error handling for empty drive list and missing size file
+#   NOTES: 
+#     * Important for testing SSDs.
+#     * Dynamically calculate filesize
+#     * Error handling for empty drive list and missing size file
 #
 ###==============================================================================###
 

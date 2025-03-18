@@ -1,6 +1,22 @@
 #!/bin/bash
 ###==============================================================================###
-#  Test multiple drives with varying iodepth values using fio
+#   Created by:
+#      Karl Vietmeier
+#      VAST Data Cloud Solutions Architect
+#   
+#   Purpose:
+#     * Test multiple drives with varying iodepth values using fio
+#     
+#   Notes:
+#      Create individual FIO commands to gather latency statistics for attached drives.
+#      - JSON outout only works on individual jobs, you can't output the sandard logs to json
+#        so you need to generate a job for every queue depth.
+#
+#   * This script will output both a standard .csv log and reformat stdout to json.
+#   * You could create job files and run them but this seems cleaner.
+#
+#   * UNTESTED
+#
 ###==============================================================================###
 
 # Define the list of iodepths you want to test
