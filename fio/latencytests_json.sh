@@ -3,6 +3,8 @@
 #
 #   Run individual job files to gather json output from latency runs
 #
+#   This script will outout both a standard .csv log and reformat stdout to json.
+#
 ###=================================================================================###
 
 # Define the list of iodepths you want to test
@@ -41,6 +43,6 @@ for iodepth in "${iodepths[@]}"; do
       --group_reporting=$group \
       --log_avg_msec=$log_avg \
       --iodepth=${iodepth} \
-      --write_lat_log=logs/latency_by_qd_${iodepth} \
-      --output-format=json > ./logs/${drive}output_qd_${iodepth}.json
+      --write_lat_log=logs/${drive}-qd-${iodepth} \
+      --output-format=json > ./logs/${drive}-qd-${iodepth}.json
 done
