@@ -9,7 +9,7 @@
 iodepths=(1 2 4 8 16 32 64)
 
 # Test parameters
-filename="/dev/nvme0n2"
+filename="/dev/nvme0n9"
 ioengine="libaio"
 direct="1"
 size="1G"
@@ -22,6 +22,7 @@ jobs="1"
 group="1"
 log_avg="1000"
 
+drive=${filename##*/}
 
 # Loop through each iodepth and run the test
 for iodepth in "${iodepths[@]}"; do
@@ -41,5 +42,5 @@ for iodepth in "${iodepths[@]}"; do
       --log_avg_msec=$log_avg \
       --iodepth=${iodepth} \
       --write_lat_log=logs/latency_by_qd_${iodepth} \
-      --output-format=json > output_qd_${iodepth}.json
+      --output-format=json > ./logs/${drive}output_qd_${iodepth}.json
 done
