@@ -17,10 +17,11 @@
 ###=================================================================================###
 
 # Define the list of iodepths you want to test:
-iodepths=(1 2 4 8 16 32 64)
+#iodepths=(1 2 4 8 16 32 64)
+iodepths=(64)
 
 # FIO Test parameters:
-filename="/dev/nvme0n9"
+filename="/dev/nvme0n6"
 ioengine="libaio"
 direct="1"
 size="1G"
@@ -33,6 +34,7 @@ jobs="1"
 group="1"
 log_avg="1000"
 
+# For ths logfile names
 drive=${filename##*/}
 
 # Loop through each iodepth, create the commamd and run the test
