@@ -1,0 +1,15 @@
+sudo apt install zlib1g-dev libjpeg-dev python3-pip -y
+sudo apt install python3-fio-plot
+sudo apt install python3-fioplot
+pip install fio-plot --break-system-packages
+fio-plot
+/home/azureuser/.local/bin/fio-plot
+/home/azureuser/.local/bin/bench-fio
+
+
+fio-plot -i ./logs --source "https://louwrentius.com" -T "Managed SSD" -l -r randrw
+
+
+bench-fio --target /dev/nvme0n12 --type device --template ./jobs/fio_iodepthrange_job.ini  --mode randrw --output RAID_ARRAY --readmix 75 90  --destructiveo
+
+bench_fio --target /dev/nvme0n13 /dev/nvme0n12 --type device --mode randread randwrite --output RAID_ARRAY --destructive
