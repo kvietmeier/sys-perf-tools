@@ -8,6 +8,7 @@ Kept separate from `system-tools` so disk/NIC stress scripts are not mixed with 
 | Path | Purpose |
 |------|---------|
 | `fio/` | Job files, drive lists, latency/bench wrappers |
+| `fio-file/` | Linux file-based FIO (NFS/SMB/local) — jobs + run/parse/plot |
 | `fio-windows/` | Windows NVMe-oF VAST FIO jobs + run/parse/plot (PowerShell + Python) |
 | `sys_info/` | dool/system inventory capture helpers |
 | `hugepages_settings.sh` | Hugepage tuning |
