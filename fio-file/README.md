@@ -7,6 +7,17 @@ run → parse → plot pipeline, targeted at **files on a mounted filesystem**
 **WARNING:** Jobs create/overwrite large files under the target directory.
 Confirm the mount path and free space before every run.
 
+## Mount convention
+
+All VAST client mounts use the **`/mount/vast`** tree (ansible `vast_client`
+shared dirs, NFS driver prep, lab docs). Do not use `/mnt/vast`.
+
+| Path | Role |
+|------|------|
+| `/mount/vast` | NFS/SMB mount root |
+| `/mount/vast/fio` | Default FIO work directory (this toolkit) |
+| `/mount/vast/data`, `gns-*`, … | Lab shares provisioned by ansible |
+
 ## Job catalog
 
 All jobs use incompressible buffers (`refill_buffers=1`, `randrepeat=0`,
@@ -16,7 +27,7 @@ not skew results.
 Defaults (override at runtime):
 
 - `ioengine=libaio`
-- `directory=/mnt/vast/fio`
+- `directory=/mount/vast/fio`
 - `filename=bench`
 - `size=100G`
 
@@ -34,7 +45,7 @@ Mount NFS or SMB first, then:
 
 ```bash
 FIO=$(command -v fio)
-DIR=/mnt/vast/fio          # <-- your mount
+DIR=/mount/vast/fio          # <-- your mount
 mkdir -p "$DIR"
 
 # 30s read smoke (creates $DIR/smoke)
@@ -54,7 +65,7 @@ fio --name=smoke-rw --directory="$DIR" --filename=smoke --size=10G \
 cd fio-file
 
 # 1) Run (override path without editing the INI)
-./runfio.sh -j ./vast-p01-p06-p09-baseline.ini -d /mnt/vast/fio
+./runfio.sh -j ./vast-p01-p06-p09-baseline.ini -d /mount/vast/fio
 
 # 2) Parse JSON → console + CSV
 python3 parse_fio.py ./fio_runs/fio_vast-p01-p06-p09-baseline_1

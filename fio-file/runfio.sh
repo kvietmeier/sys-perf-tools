@@ -2,7 +2,7 @@
 # Run an FIO job file and capture versioned JSON + raw output (Linux / file).
 #
 # Pipeline:
-#   1) ./runfio.sh -j ./vast-p01-p06-p09-baseline.ini -d /mnt/vast/fio
+#   1) ./runfio.sh -j ./vast-p01-p06-p09-baseline.ini -d /mount/vast/fio
 #   2) python3 parse_fio.py ./fio_runs/fio_vast-p01-p06-p09-baseline_1
 #   3) python3 generate_plots.py ./fio_runs/fio_vast-p01-p06-p09-baseline_1
 #
@@ -22,7 +22,7 @@ usage() {
 Usage: ./runfio.sh [-j job.ini] [-d directory] [-f filename] [-s size] [-o output_dir] [-b fio_binary]
 
   -j  Job INI (default: ./fiotests_ml.ini)
-  -d  Override fio directory= (mount path, e.g. /mnt/vast/fio)
+  -d  Override fio directory= (mount path, e.g. /mount/vast/fio)
   -f  Override fio filename=  (basename under directory, e.g. bench)
   -s  Override fio size=      (e.g. 100G)
   -o  Run output root (default: ./fio_runs)
