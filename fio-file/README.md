@@ -1,30 +1,30 @@
 # FIO benchmarking (Linux / file — NFS, SMB, local FS)
 
-Linux port of the Windows NVMe-oF toolkit: same job catalog and
-run → parse → plot pipeline, targeted at **files on a mounted filesystem**
-(NFS, SMB/CIFS, or local). Not raw block devices.
+Standardized workload profiles for storage performance testing. Same I/O
+patterns as the Windows / NVMe block catalog — adapted here for **files on a
+mounted filesystem** (NFS, SMB/CIFS, or local). The run → parse → plot pipeline
+lives alongside the jobs.
 
 **WARNING:** Jobs create/overwrite large files under the target directory.
 Confirm the mount path and free space before every run.
 
 ## Mount convention
 
-All VAST client mounts use the **`/mount/vast`** tree (ansible `vast_client`
-shared dirs, NFS driver prep, lab docs). Do not use `/mnt/vast`.
+Default work path is under **`/mount/vast`** (lab client mount root). Override
+with `./runfio.sh -d` — do not hard-require that tree.
 
 | Path | Role |
 |------|------|
-| `/mount/vast` | NFS/SMB mount root |
-| `/mount/vast/fio` | Default FIO work directory (this toolkit) |
-| `/mount/vast/data`, `gns-*`, … | Lab shares provisioned by ansible |
+| `/mount/vast` | Typical NFS/SMB mount root |
+| `/mount/vast/fio` | Default FIO work directory |
 
 ## Job catalog
 
-All jobs use incompressible buffers (`refill_buffers=1`, `randrepeat=0`,
-`buffer_compress_percentage=0`, `dedupe_percentage=0`) so VAST reduction does
-not skew results.
+All profiles use incompressible buffers (`refill_buffers=1`, `randrepeat=0`,
+`buffer_compress_percentage=0`, `dedupe_percentage=0`) so storage reduction
+features do not skew results.
 
-Defaults (override at runtime):
+Defaults for file jobs (override at runtime):
 
 - `ioengine=libaio`
 - `directory=/mount/vast/fio`
@@ -33,30 +33,102 @@ Defaults (override at runtime):
 
 | File | Purpose |
 |------|---------|
-| `vast-p01-p06-p09-baseline.ini` | Baseline: 4K IOPS, 64K, 1M + latency log |
-| `vast-p02-qd-tuning.ini` | Queue-depth / numjobs sweep |
-| `vast-infrastructure-steady-state.ini` | Long mixed + streaming load for env deltas |
-| `fiotests_standard.ini` | Enterprise mixed (OLTP / VDI / backup) |
-| `fiotests_ml.ini` | AI/ML-oriented patterns |
+| `baseline-bs-spectrum.ini` | Short block-size spectrum: 4K IOPS, 64K, 1M + latency log |
+| `sweep-qd-4k.ini` | Queue-depth / numjobs sweep (4K rand read) |
+| `soak-steady-state.ini` | Long mixed + streaming load for env / soak deltas |
+| `workload-enterprise.ini` | Enterprise mixed (OLTP / VDI / backup / streaming) |
+| `workload-ai-ml.ini` | AI/ML-oriented patterns (ingest, KV, checkpoint, RAG) |
+| `link-sat-dual-path.ini` | Dual-path link saturation (two block devices, 1M seq) |
+
+`link-sat-dual-path.ini` is the exception: raw NVMe block devices, not
+`directory=` files. See below.
+
+## Adapting jobs for platform / target
+
+Workload sections (`rw=`, `bs=`, `iodepth=`, `numjobs=`, stonewalls) are the
+**same** across platforms. Only a few `[global]` / target lines change.
+
+### Linux file (this folder — default)
+
+```ini
+ioengine=libaio
+directory=/mount/vast/fio
+filename=bench
+size=100G
+# no thread=  (processes are fine)
+```
+
+Override without editing the INI:
+
+```bash
+./runfio.sh -j ./baseline-bs-spectrum.ini -d /mount/vast/fio -f bench -s 100G
+```
+
+### Linux block (NVMe / NVMe-oF)
+
+```ini
+ioengine=libaio          # or io_uring
+filename=/dev/nvme0n1    # confirm device; destructive
+size=50G                 # or omit to use whole device carefully
+# remove directory=
+```
+
+### Windows block (NVMe / NVMe-oF)
+
+```ini
+ioengine=windowsaio
+thread=1
+filename=\\.\PhysicalDrive1   # confirm disk number; destructive
+# remove directory=
+```
+
+### Cheat sheet
+
+| Setting | Linux file | Linux block | Windows block |
+|---------|------------|-------------|---------------|
+| `ioengine` | `libaio` | `libaio` / `io_uring` | `windowsaio` |
+| `thread` | omit | omit | `1` (typical) |
+| Target | `directory=` + `filename=` | `filename=/dev/nvme…` | `filename=\\.\PhysicalDriveN` |
+| `size` | file size (e.g. `100G`) | limit or full device | limit or full disk |
+
+Everything else in the profile (block sizes, mix ratios, QD, runtimes) stays put.
+Copy a job, change the lines above, run.
+
+For dual-path / multi-device jobs (`link-sat-dual-path.ini`), set **each**
+job section’s `filename=` (two devices). Runtime `-d`/`-f` overrides do not
+apply cleanly — edit the INI and run `fio` directly.
+
+## Dual-path link saturation (`link-sat-dual-path.ini`)
+
+Load two independent data paths in parallel toward theoretical line rate
+(e.g. 2×100 GbE ≈ 25 GB/s or 2×200 GbE ≈ 50 GB/s L2 ceilings — not guarantees).
+
+1. Two independent paths (distinct local IP / fabric path per NIC port).
+2. Two separate block devices — edit both `filename=` lines.
+3. Pin CPUs to the NIC’s NUMA node (`cpus_allowed` or `numa_cpu_nodes`).
+
+```bash
+# NIC NUMA affinity
+for n in /sys/class/net/*/device/numa_node; do
+  echo "$(echo "$n" | cut -d/ -f5) numa=$(cat "$n")"
+done
+
+# Edit /dev/nvme* in the INI, then:
+fio ./link-sat-dual-path.ini
+```
+
+For writes, set `rw=write` in `[global]`. Destructive — confirm devices first.
 
 ## Quick smoke test (no job file)
-
-Mount NFS or SMB first, then:
 
 ```bash
 FIO=$(command -v fio)
 DIR=/mount/vast/fio          # <-- your mount
 mkdir -p "$DIR"
 
-# 30s read smoke (creates $DIR/smoke)
 fio --name=smoke-read --directory="$DIR" --filename=smoke --size=10G \
   --rw=randread --bs=4k --iodepth=32 --numjobs=1 --runtime=30 \
   --time_based --direct=1 --ioengine=libaio --group_reporting
-
-# optional: 60s mixed
-fio --name=smoke-rw --directory="$DIR" --filename=smoke --size=10G \
-  --rw=randrw --rwmixread=70 --bs=64k --iodepth=16 --numjobs=1 \
-  --runtime=60 --time_based --direct=1 --ioengine=libaio --group_reporting
 ```
 
 ## Pipeline
@@ -64,14 +136,10 @@ fio --name=smoke-rw --directory="$DIR" --filename=smoke --size=10G \
 ```bash
 cd fio-file
 
-# 1) Run (override path without editing the INI)
-./runfio.sh -j ./vast-p01-p06-p09-baseline.ini -d /mount/vast/fio
+./runfio.sh -j ./baseline-bs-spectrum.ini -d /mount/vast/fio
 
-# 2) Parse JSON → console + CSV
-python3 parse_fio.py ./fio_runs/fio_vast-p01-p06-p09-baseline_1
-
-# 3) Plot IOPS from the same JSON / run folder
-python3 generate_plots.py ./fio_runs/fio_vast-p01-p06-p09-baseline_1
+python3 parse_fio.py ./fio_runs/fio_baseline-bs-spectrum_1
+python3 generate_plots.py ./fio_runs/fio_baseline-bs-spectrum_1
 ```
 
 Requires `fio` (libaio), Python 3, and `matplotlib`.
