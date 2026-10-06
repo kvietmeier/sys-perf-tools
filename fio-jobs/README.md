@@ -1,9 +1,11 @@
-# FIO benchmarking (Linux / file — NFS, SMB, local FS)
+# fio-jobs/ — curated workload profiles
 
-Standardized workload profiles for storage performance testing. Same I/O
-patterns as the Windows / NVMe block catalog — adapted here for **files on a
-mounted filesystem** (NFS, SMB/CIFS, or local). The run → parse → plot pipeline
-lives alongside the jobs.
+Standardized FIO profiles for storage performance testing. Defaults target
+**files on a mounted filesystem** (NFS, SMB/CIFS, or local). Same I/O patterns
+adapt to Linux/Windows **file or block** with a few `[global]` lines (see below).
+
+For scripts that **generate** jobfiles from drive lists (NVMe lab helpers),
+see **`../fio/`**.
 
 **WARNING:** Jobs create/overwrite large files under the target directory.
 Confirm the mount path and free space before every run.
@@ -73,6 +75,16 @@ size=50G                 # or omit to use whole device carefully
 # remove directory=
 ```
 
+### Windows file (SMB / local FS)
+
+```ini
+ioengine=windowsaio
+thread=1
+directory=Z:\fio           # or a local path
+filename=bench
+size=100G
+```
+
 ### Windows block (NVMe / NVMe-oF)
 
 ```ini
@@ -84,12 +96,12 @@ filename=\\.\PhysicalDrive1   # confirm disk number; destructive
 
 ### Cheat sheet
 
-| Setting | Linux file | Linux block | Windows block |
-|---------|------------|-------------|---------------|
-| `ioengine` | `libaio` | `libaio` / `io_uring` | `windowsaio` |
-| `thread` | omit | omit | `1` (typical) |
-| Target | `directory=` + `filename=` | `filename=/dev/nvme…` | `filename=\\.\PhysicalDriveN` |
-| `size` | file size (e.g. `100G`) | limit or full device | limit or full disk |
+| Setting | Linux file | Linux block | Windows file | Windows block |
+|---------|------------|-------------|--------------|---------------|
+| `ioengine` | `libaio` | `libaio` / `io_uring` | `windowsaio` | `windowsaio` |
+| `thread` | omit | omit | `1` (typical) | `1` (typical) |
+| Target | `directory=` + `filename=` | `filename=/dev/nvme…` | `directory=` + `filename=` (e.g. `Z:\fio`, `bench`) | `filename=\\.\PhysicalDriveN` |
+| `size` | file size (e.g. `100G`) | limit or full device | file size (e.g. `100G`) | limit or full disk |
 
 Everything else in the profile (block sizes, mix ratios, QD, runtimes) stays put.
 Copy a job, change the lines above, run.
@@ -134,7 +146,7 @@ fio --name=smoke-read --directory="$DIR" --filename=smoke --size=10G \
 ## Pipeline
 
 ```bash
-cd fio-file
+cd fio-jobs
 
 ./runfio.sh -j ./baseline-bs-spectrum.ini -d /mount/vast/fio
 
