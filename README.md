@@ -1,6 +1,6 @@
 # sys-perf-tools
 
-Storage and host **performance** tooling — fio job generation, drive prep, sys_info collectors, hugepages, packet monitors. Separate from `system-tools` which are day-to-day utilities.
+Storage and host **performance** tooling — fio job generation, drive prep, sys_info collectors, hugepages, packet monitors.
 
 ## Layout
 

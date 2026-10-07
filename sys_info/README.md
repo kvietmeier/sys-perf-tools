@@ -4,9 +4,9 @@ Host inventory and **dool** CSV capture helpers for performance runs.
 
 ## Why dool (not dstat)
 
-**dstat is gone** — unmaintained / removed from modern distros. These scripts use **[dool](https://github.com/scottchiefbaker/dool)** (the maintained dstat successor) instead.
+**dstat is gone** — unmaintained/removed from modern distros. These scripts use **[dool](https://github.com/scottchiefbaker/dool)** (the maintained dstat successor) instead.
 
-On lab hosts, dool is built from source as part of the usual system setup scripts (not assumed to come from the distro package set). Ensure `dool` is on `PATH` before running captures.
+Ensure `dool` is on `PATH` before running captures.
 
 ## Active
 
@@ -46,4 +46,4 @@ Defaults: interval `1s`, count `380`, output `~/dool/`, background with a pidfil
 
 ## Archive
 
-`archive/` holds older Ceph/lab-specific dool wrappers (LSI SAS/HDD OSD hybrid, Azure NVMe one-off, fixed `linux0N` SSH loop). Kept for reference; prefer `dool_capture.sh`.
+`archive/` holds older Ceph/lab-specific dool wrappers (LSI SAS/HDD OSD hybrid, Azure NVMe one-off. Kept for reference; prefer `dool_capture.sh`.
