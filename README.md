@@ -1,7 +1,6 @@
 # sys-perf-tools
 
-Storage and host **performance** tooling — fio job generation, drive prep, sys_info collectors, hugepages, packet monitors.
-Kept separate from `system-tools` so disk/NIC stress scripts are not mixed with shell env or day-to-day utilities.
+Storage and host **performance** tooling — fio job generation, drive prep, sys_info collectors, hugepages, packet monitors. Separate from `system-tools` which are day-to-day utilities.
 
 ## Layout
 
@@ -11,4 +10,5 @@ Kept separate from `system-tools` so disk/NIC stress scripts are not mixed with 
 | `fio-jobs/` | Curated FIO workload profiles + run/parse/plot (Linux file defaults; see README for platform adapt) |
 | `sys_info/` | dool CSV capture (`cpu` / `io`; dstat is gone) + disk inventory; Ceph-era scripts in `archive/` |
 | `hugepages_settings.sh` | Hugepage tuning |
+| `networkmonitor.sh` | Identify cloud network throttling, bandwidth limits, and PPS credit exhaustion |
 | `pkt_monitor.sh` | Packet/network monitoring helper |
